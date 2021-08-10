@@ -26,15 +26,32 @@
             <!-- Add In Logo -->
         </div>
         <div id="addin-desc">
-            <p>This is a test add-in. Please click a button below to do something to this spreadsheet.</p>
+            <p>This add-in was created to help with processing variable lists.</p>
+        </div>
+        <div id="init" class="action_button">
+            <span>Initialize</span>
+        </div>
+        <div id="split-options">
+            <div class="split-option">
+                <h4 class="option-title">Alternate</h4>
+                <p class="option-desc">Applying the Alternate option will sort the data using a modulo formula before splitting. This option is used for plastic products.</p>
+                <input type="checkbox" id="split-alt" class="chk" name="split-alt">
+                <label for="split-alt"> Alternate</label><br>
+            </div>
+            <div class="split-option">
+                <h4 class="option-title">Up</h4>
+                <p class="option-desc">How many artworks will appear on each page of the print file?</p>
+                <input type="number" id="split-up" class="inpt" value="2">
+            </div>
+            <div id="split" class="action_button">
+                <span>Split</span>
+            </div>
         </div>
         <div id="actions">
-            <div id="init" class="action_button">
-                <span>Initialize</span>
-            </div>
-            <div id="insert" class="action_button">
-                <span>Insert Table</span>
-            </div>
+
+            <!-- <div id="count" class="action_button">
+                <span>Count</span>
+            </div> -->
         </div>
     
 

@@ -12,10 +12,32 @@ import "../../assets/icon-80.png";
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
-    // document.getElementById("sideload-msg").style.display = "none";
-    // document.getElementById("app-body").style.display = "flex";
-    document.getElementById("init").onclick = init;
-    document.getElementById("insert").onclick = insert;
+
+    // Attach Events
+    // If the table does not yet exist, add event to init click
+    Excel.run(function (context) {
+
+      var sheet = context.workbook.worksheets.getActiveWorksheet();
+      var mergeTable = sheet.tables.getItem("DatamergeTable");
+
+      mergeTable.load("name");
+
+      return context.sync().then(function() {
+        // Table exists.... Disable the initialize button
+        $("#init").addClass("disabled-button").find("span").text("Table Initialized...");
+        // Show the split options
+        $("#split-options").slideDown();
+        
+      });
+
+    }).catch(function (err) {
+        // Table doesn't exist, add event to Initialize button
+        console.log(err)
+        document.getElementById("init").onclick = init;
+    });
+    
+    document.getElementById("count").onclick = count;
+
   }
   console.log("READY!");
 });
@@ -23,14 +45,13 @@ Office.onReady((info) => {
 
 /**
  * -------------------------------------------------------------------------------------------------- |
- * Initialize the list (Convert to Table)
+ * Convert the list to a Table
  * -------------------------------------------------------------------------------------------------- |
  */
 
 export async function init() {
   //#region
   console.log("Converting the Used Range of Active Sheet to a Table");
-
   Excel.run(function (context) {
     /**
      * Insert your Excel code here
@@ -47,96 +68,157 @@ export async function init() {
     return context.sync()
       .then(function () {
           var dataTable = sheet.tables.add(usedData.address, true /*hasHeaders*/);
-          dataTable.name = "Datamerge Table";
-          dataTable.rows.add(usedData.values);
-          // console.log(usedData.values)
+          dataTable.name = "DatamergeTable";
+
+          // Update the initialize button
+          $("#init").addClass("disabled-button").find("span").text("Table Initialized...");
+          // Remove event
+          document.getElementById("init").onclick = function() {
+            return false;
+          }
+          // Show the split options
+          $("#split-options").slideDown();
+
       });
     // console.log(`The range address was ${range.address}.`);
 
   }).catch(function(err){
-    console.log("Error caught... displaying log");
-    showError("This document has already been initialized...");
+    console.log(err);
+    showError("The table has already been initialized.");
+
   });
+
+
+
   //#endregion
 }
 
-export async function insert() {
-  console.log("RUN!");
-  try {
-    await Excel.run(async (context) => {
-      /**
-       * Insert your Excel code here
-       */
-      var sheet = context.workbook.worksheets.getActiveWorksheet();
-      // sheet.getRange("C:C").insert('right'); 
-      var expensesTable = sheet.tables.add("A1:D1", true /*hasHeaders*/);
-      expensesTable.name = "ExpensesTable";
-      expensesTable.getHeaderRowRange().values = [["Date", "Merchant", "Category", "Amount"]];
-
-      expensesTable.rows.add(null /*add rows to the end of the table*/, [
-        ["1/1/2017", "The Phone Company", "Communications", "$120"],
-        ["1/2/2017", "Northwind Electric Cars", "Transportation", "$142"],
-        ["1/5/2017", "Best For You Organics Company", "Groceries", "$27"],
-        ["1/10/2017", "Coho Vineyard", "Restaurant", "$33"],
-        ["1/11/2017", "Bellows College", "Education", "$350"],
-        ["1/15/2017", "Trey Research", "Other", "$135"],
-        ["1/15/2017", "Best For You Organics Company", "Groceries", "$97"],
-      ]);
-      if (Office.context.requirements.isSetSupported("ExcelApi", "1.2")) {
-        sheet.getUsedRange().format.autofitColumns();
-        sheet.getUsedRange().format.autofitRows();
-      }
-
-      sheet.activate();
-
-      await context.sync();
-    });
-  } catch (error) {
-    $("#log-error").text("Table already exists...")
-    $("#log").show();
-    console.error(error);
-  }
-}
-
-$("#hide").on("click", function() {
-  $("#log").hide();
-})
-
-$("#del").on("click", function() {
+/**
+ * -------------------------------------------------------------------------------------------------- |
+ * Add Count Column
+ * -------------------------------------------------------------------------------------------------- |
+ */
+function addCountColumn () {
 
   Excel.run(function (context) {
-    var sheet = context.workbook.worksheets.getActiveWorksheet();
-    var expensesTable = sheet.tables.getItem("ExpensesTable");
 
-    return context.sync()
-        .then(function () {
-            expensesTable.delete();
-            $("#log").hide();
-        });
-  }).catch(function(){
-    console.log("error")
+    var sheet = context.workbook.worksheets.getActiveWorksheet();
+    var mergeTable = sheet.tables.getItem("DatamergeTable");
+    mergeTable.columns.add(0 /*index*/, null /*values*/, "count" /*name*/)
+    // return context.sync().then(function() {
+    //   console.log(mergeTable.values);
+    // });
+    return context.sync();
+
+  }).catch(function(err){
+    console.log(err)
+    showError(err);
   });
-})
+
+}
+
+
+export async function count() {
+  //#region
+  console.log("Add Count column to table");
+  addCountColumn();
+  
+  //#endregion
+}
 
 
 /**
- * Show Error Message
+ * -------------------------------------------------------------------------------------------------- |
+ * Update / Show the Message Log
+ * -------------------------------------------------------------------------------------------------- |
  */
 function showError(theError) {
   //#region
-  console.log("Inside showError...")
   $("#log-slide").fadeIn(); // Show the error log area
   $("#log-message").text(theError);
   //#endregion
 }
 
 /**
- * EVENT - Close the error message
+ * -------------------------------------------------------------------------------------------------- |
+ * Hide the Message Log
+ * -------------------------------------------------------------------------------------------------- |
  */
+
 $("#log-dismiss").on("click", function() {
+  //#region
   $("#log-slide").fadeOut(function() {
     // Done fading
     $("#log-message").empty();
   });
+  //#endregion
+})
+
+/**
+ * -------------------------------------------------------------------------------------------------- |
+ * Split Button
+ * -------------------------------------------------------------------------------------------------- |
+ */
+
+$("#split").on("click", function() {
+  var alt = $("#split-alt").is(":checked"); // Will we alternate?
+  var up = $("#split-up").val();
+
+  /**
+   * Perform the following actions, in order:
+   * Add count column, add alternate column if alt is checked
+   * Split the document based on up and row count
+   */
+  sort(alt);
+  // split();
 
 })
+
+/**
+ * -------------------------------------------------------------------------------------------------- |
+ * The Fancy Sort Function
+ * Adds the count column
+ * Optionally - Creates an alternate column with modulo function and sorts by that.
+ * -------------------------------------------------------------------------------------------------- |
+ */
+
+function sort(alt) {
+
+  Excel.run(function (context) {
+
+    // Grab the table
+    var sheet = context.workbook.worksheets.getActiveWorksheet();
+    var mergeTable = sheet.tables.getItem("DatamergeTable");
+    
+    // Insert the count column
+    var countCol = mergeTable.columns.add(0 /*index*/, null /*values*/, "count" /*name*/);
+    // Add 1 to the first cell
+
+    // If alternate is selected, add alternate column
+    if (alt) {
+      mergeTable.columns.add(0 /*index*/, null /*values*/, "alternate" /*name*/);
+    }
+    
+    var tableData = mergeTable.getRange().load("values");
+    // countRange.load("values");
+
+    /**
+     * The Sink
+     */
+    // var rowCount = mergeTable.rows.getCount()
+    // countCol.load("values");
+
+    return context.sync().then(function () {
+      // Grab row count
+      console.log(tableData.values)
+      tableData.values[1][0] = "1";
+      return context.sync();
+
+    });
+
+  }).catch(function(err){
+    console.log(err)
+    showError(err);
+  });
+
+}

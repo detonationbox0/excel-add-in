@@ -5,7 +5,7 @@ html, body {
 }
 
 #container {
-    background-color:lightgreen;
+    /* background-color:lightgreen; */
 }
 
 .action_button {
@@ -21,6 +21,16 @@ html, body {
     background-color:rgb(0,120,212);
     cursor:pointer;
     color:white;
+}
+
+.disabled-button {
+    border-color:lightgray;
+}
+
+.disabled-button:hover {
+    cursor:default;
+    background-color:white;
+    color:#333;
 }
 
 #addin-head {
@@ -43,7 +53,7 @@ html, body {
 }
 
 #actions {
-    background-color:lightcoral;
+    /* background-color:lightcoral; */
     /* height:100%; */
 }
 
@@ -81,4 +91,16 @@ html, body {
 .action-text:hover {
     cursor:pointer;
     text-decoration: underline;
+}
+
+#split-options {
+    display:none;
+    padding:0px 10px;
+    border:solid 1px rgb(0,120,212);
+    border-radius:5px;
+    margin-bottom:10px;
+}
+
+.split-option {
+    margin-bottom:10px;
 }
