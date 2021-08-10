@@ -1,0 +1,84 @@
+
+html, body {
+    /* margin:0px; padding:0px; */
+    /* height:100vh; */
+}
+
+#container {
+    background-color:lightgreen;
+}
+
+.action_button {
+    border:1px solid rgb(0,120,212);
+    text-align:center;
+    padding:5px 10px;
+    border-radius:5px;
+    transition:.1s;
+    margin-bottom:10px;
+}
+
+.action_button:hover {
+    background-color:rgb(0,120,212);
+    cursor:pointer;
+    color:white;
+}
+
+#addin-head {
+    width:100%;
+    height:150px;
+    margin:auto;
+    align-items: center;
+    justify-content: center;
+    margin:20px 0px;
+    background-image:url(/assets/logo-filled.png);
+    background-size: contain;
+    background-repeat:no-repeat;
+    background-position:center;
+}
+
+
+#addin-desc {
+    text-align:center;
+    margin:0px 10px;
+}
+
+#actions {
+    background-color:lightcoral;
+    /* height:100%; */
+}
+
+#log-slide {
+    position:absolute;
+    display:none;
+    text-align:center;
+    bottom:0px;
+    left:0px;
+    right:0px;
+    background-color:crimson;
+}
+
+#log-message {
+    color:white;
+}
+
+
+#log-dismiss {
+    color:white;
+    text-align:center;
+    font-size:smaller;
+}
+
+#log-dismiss:hover {
+    text-decoration:underline;
+    cursor:pointer;
+}
+
+.action-text {
+    color:rgb(0,120,212);
+    transition:.1s;
+}
+
+.action-text:hover {
+    cursor:pointer;
+    text-decoration: underline;
+}
